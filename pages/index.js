@@ -1,88 +1,108 @@
-import React from 'react'
-import Head from 'next/head'
-import Nav from '../components/nav'
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import styled from '@emotion/styled'; // i18n
+import ArticleBox from '../components/ArticleBox';
+import fetch from '../utils/fetch.js';
 
-const Home = () => (
-  <div>
-    <Head>
-      <title>Home</title>
-      <link rel="icon" href="/favicon.ico" />
-    </Head>
+class Index extends Component {
+  // eslint-disable-next-line react/static-property-placement
+  static propTypes = {
+    // eslint-disable-next-line react/require-default-props
+    articles: PropTypes.object, // .isRequired,
+  };
 
-    <Nav />
+  static getInitialProps = async context => {
+    const page = context.query.page || 1;
+    const articles = await fetch(
+      null,
+      'get',
+      `admin/articles?page=${page}`,
+      null,
+    );
+    return {
+      articles,
+    };
+  };
 
-    <div className="hero">
-      <h1 className="title">Welcome to Next.js!</h1>
-      <p className="description">
-        To get started, edit <code>pages/index.js</code> and save to reload.
-      </p>
+  render = () => {
+    return (
+      <>
+        <Container>
+          <MenuBar>
+            <img src="/img/elemental.png" alt="" />
+            <span>By medium</span>
+          </MenuBar>
 
-      <div className="row">
-        <a href="https://nextjs.org/docs" className="card">
-          <h3>Documentation &rarr;</h3>
-          <p>Learn more about Next.js in the documentation.</p>
-        </a>
-        <a href="https://nextjs.org/learn" className="card">
-          <h3>Next.js Learn &rarr;</h3>
-          <p>Learn about Next.js by following an interactive tutorial!</p>
-        </a>
-        <a
-          href="https://github.com/zeit/next.js/tree/master/examples"
-          className="card"
-        >
-          <h3>Examples &rarr;</h3>
-          <p>Find other example boilerplates on the Next.js GitHub.</p>
-        </a>
-      </div>
-    </div>
+          <div className="row" style={{ marginTop: '20px' }}>
+            {this.props.articles.title !== null &&
+              this.props.articles.rows.map((article, index) => {
+                if (index === 0) {
+                  return (
+                    <>
+                      <div className="col-8" style={{ marginBottom: '20px' }}>
+                        <Thumbnail
+                          style={{
+                            backgroundImage: `url(http://localhost:3000/${article.coverImageURL})`,
+                          }}
+                        />
+                      </div>
+                      <div className="col-4" style={{ marginBottom: '20px' }}>
+                        <a href={`/articleDetail?id=${article.id}`}>
+                          <h2>{article.title}</h2>
+                        </a>
+                        <br />
+                        {article.detail}
+                      </div>
+                    </>
+                  );
+                }
+                return (
+                  <div className="col-4">
+                    <ArticleBox article={article} />
+                  </div>
+                );
+              })}
+          </div>
+        </Container>
+      </>
+    );
+  };
+}
 
-    <style jsx>{`
-      .hero {
-        width: 100%;
-        color: #333;
-      }
-      .title {
-        margin: 0;
-        width: 100%;
-        padding-top: 80px;
-        line-height: 1.15;
-        font-size: 48px;
-      }
-      .title,
-      .description {
-        text-align: center;
-      }
-      .row {
-        max-width: 880px;
-        margin: 80px auto 40px;
-        display: flex;
-        flex-direction: row;
-        justify-content: space-around;
-      }
-      .card {
-        padding: 18px 18px 24px;
-        width: 220px;
-        text-align: left;
-        text-decoration: none;
-        color: #434343;
-        border: 1px solid #9b9b9b;
-      }
-      .card:hover {
-        border-color: #067df7;
-      }
-      .card h3 {
-        margin: 0;
-        color: #067df7;
-        font-size: 18px;
-      }
-      .card p {
-        margin: 0;
-        padding: 12px 0 0;
-        font-size: 13px;
-        color: #333;
-      }
-    `}</style>
-  </div>
-)
+const Container = styled.div`
+  background-color: transparent;
+  width: 1032px;
+  height: 300px;
+  margin: auto;
 
-export default Home
+  h3 {
+    margin-top: 10px;
+  }
+`;
+
+const MenuBar = styled.div`
+  background-color: transparent;
+  width: 100%;
+  height: 250px;
+  display: block;
+
+  span {
+    font-family: sans-serif;
+    font-size: 22px;
+  }
+
+  span,
+  img {
+    display: block;
+    clear: both;
+  }
+`;
+
+const Thumbnail = styled.div`
+  background-size: cover;
+  background-position: center center;
+  height: 352px;
+  width: 100%;
+`;
+
+export default Index;
